@@ -18,7 +18,6 @@ function [ output ] = myticklabel( ax, xyswitch, varargin );
     %   Only case I've run into is when I want the whole value printed,
     %   e.g. 500dam, rather than 5. with x10^2 multiplier, which is why
     %   I've enabled the 'nomult' option.
-    
 
     %% Switches default
     expandticks_flag = 0;
@@ -85,13 +84,13 @@ function [ output ] = myticklabel( ax, xyswitch, varargin );
         along_inchpos_end = axpos(4); across_inchpos_end = axpos(3);
     end
 
-    %% Get ticks
+    %% Get tick positions
     tick = get(ax,tcode); 
 
     %% Fix ticks; if user included xtick, ytick, xticklabel, or yticklabel in myset.m, they will already be applied. otherwise, this draws up the defaults.
     tick = tick(tick>=limi_along(1) & tick<=limi_along(2)); % otherwise length(tick)~=length(ticklab) necessarily, 
         % since you can specify "xtick" but Matlab only places labels if it is withint the Xlim/Ylim of the axes
-    set(ax,[tlcode 'Mode'],'auto'); set(ax,tcode,tick); % resets any user-changed ticklabels, and make sure all labels are within axis bounds
+    set(ax,[tlcode 'Mode'],'auto'); set(ax,tcode,tick); % makes sure all labels are WITHIN AXIS BOUNDS
     ticklab = get(ax,tlcode); % get auto-generated tick labels
 
     %% If "out"/"both" ticks are present, extent position by default ticklength

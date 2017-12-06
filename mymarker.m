@@ -23,9 +23,11 @@ function [ patchlines ] = mymarker( ax, xs, ys, varargin );
             case {'tcthin','ntcthin','stcthin'} % these don't look as nice
                 filenm = 'tropicalstorm.png'; ftype = 'png'; transflag = true; if ~strcmpi(arg,'stcthin'); flipflag = true; end
                 varargin(iarg) = [];  % in MyPlotFuncs directory
+                resize = 70;
             case {'tc','ntc','stc'}
                 filenm = 'storm2.jpeg'; ftype = 'jpeg';  transflag = false; if strcmpi(arg,'stc'); flipflag = true; end
                 varargin(iarg) = [];  % in MyPlotFuncs directory
+                resize = 70;
             case 'markersize'
                 markersize = varargin{iarg+1}; varargin(iarg:iarg+1) = []; 
             otherwise
@@ -133,7 +135,7 @@ function [ patchlines ] = mymarker( ax, xs, ys, varargin );
             % so we draw TWO patches for each marker. the next one uses xdata and ydata directly, sorted clockwise, with linewidth properties.
         for j=1:length(xpatch);
             xinsert = xpatch{j} + xs(i) - xmid; yinsert = ypatch{j} + ys(i) - ymid;
-            p=patch('XData',xinsert, 'YData',yinsert); %,'k'); % this way we don't have to specify color
+            p=patch('XData',xinsert, 'YData',yinsert); %,'k'); % using XData and YData this way, we don't have to specify color
             set(p, patchargs); set(p,'Facecolor','none','Marker','none'); % obviously don't want markers on edge of marker vertices
         end
     end

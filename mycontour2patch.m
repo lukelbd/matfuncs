@@ -1,14 +1,11 @@
 function [phands, F, V, xs, ys, cdata] = mycontour2patch(axm,input_d1,input_d2,data,clev,varargin)
-    % Reconstructs patch objects associated with contourfm with valid
-    % XData, YData, ZData, and Vertices fields (these fields are 
-    % *unavailable* in post-2014b Matlab). Suitable for normal x-y data
-    % fields, and for map fields using contourm. Ensures contours are
-    % closed around current 'XLim','YLim' or 'MapLatLimit','MapLonLimit'
-    % before conversion to patch objects. Data coverage can be greater 
-    % than current axis limits, or smaller. By default, if data coverage is
-    % greater, interpolates data to axis limits exactly, if gridpoints
-    % don't happen to fall there. If data coverage is smaller, but
-    % graticule/cell edges run up to axis limits, use "pad" option.
+    % Reconstructs patch objects associated with contourfm with valid XData, YData, ZData, and Vertices fields (these fields are 
+    % *unavailable* in post-2014b Matlab). Suitable for normal x-y data fields, and for map fields using contourm. Ensures contours are
+    % CLOSED/CIRCULAR within current 'XLim','YLim' or 'MapLatLimit','MapLonLimit' before conversion to patch objects.
+    %
+    % Data coverage can be greater than current axis limits, or smaller. By default, if data coverage is greater, 
+    % linearly interpolates data to axis limits exactly when the gridpoints don't happen to fall there. If data coverage 
+    % is smaller, but graticule/cell edges run up to axis limits, USE "pad" OPTION.
     %
     % IMPORTANT: Current axes XLim/YLim or axesm MapLatLimit/MapLonLimit
     % MUST be set as user intends before applying mycontour2patch. 
@@ -26,8 +23,9 @@ function [phands, F, V, xs, ys, cdata] = mycontour2patch(axm,input_d1,input_d2,d
     %
     %   contour2patch(axh, lat, lon, data, level, mapflag):
     %       lat, lon are latitude/longitude vectors. uses geo-indexed data 
-    %       with current axesm projection. mapflag can be "map" or "mapcirc". 
-    %       use "mapcirc" when graticule/cells encompass all longitudes.
+    %       with current axesm projection.
+    %           mapflag options: "map" or "mapcirc". 
+    %           use "mapcirc" when graticule/cells encompass all longitudes.
     %
     %   contour2patch(..., "pad", padtype):
     %       use if gridpoint/cell centers are all within axis limits, but 
@@ -145,6 +143,7 @@ function [phands, F, V, xs, ys, cdata] = mycontour2patch(axm,input_d1,input_d2,d
     bindata = double(data>=clev);
     y_lim = getfunc(axm, y_limkey); 
     x_lim = getfunc(axm, x_limkey);
+    % Map processing
     if mapflag;     
         y = input_d1(:); x = input_d2(:);
         x = mod(x,360);
@@ -341,4 +340,3 @@ function [xfix] = lonmonotonic(x)
         end
     end
 
-    return

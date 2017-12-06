@@ -1,6 +1,28 @@
 function [ F, V, xs, ys ] = mypoly2fv( xs, ys );
-    % Converts array-indexed (separator is row of NaNs) or cell-array-indexed (each polygon x, y indices are self contained in 1by1 cells of vectors)
-    % set of polygons to Face-Value format with HOLES where one object is inside another, etc.    
+    % Converts array-indexed (separator is row of NaNs) or cell-array-indexed (each polygon x, y indices 
+    % are self contained in 1by1 cells of vectors) set of polygons to Face-Value format with HOLES where 
+    % one object is inside another, etc.
+    %
+    % Usage: [ F, V, xs, ys ] = mypoly2fv( xs, ys );
+    %
+    % Input:
+    %   xs, ys - Array-indexed (separator is row of NaNs) or cell-array index (each polygon x, y indices 
+    %               are self contained in 1by1 cells of vectors) vertices
+    %
+    % Output:
+    %   F - Faces
+    %   V - Vertices
+    %   xs - Counterclockwise/clockwise adjusted x vertices, CELL format
+    %   ys - Counterclockwise/clockwise adjusted y vertices, CELL format
+    %
+    % When drawing objects, must make TWO: use F, V fo INTERIOR colors, etc., with 'LineStyle','none'
+    % and use xs, ys for EDGES with 'FaceColor','none'. This allows both for holes within objects, AND edges;
+    % if you try to draw edges with F-V, lines will criss-cross across object randomly (vertices are not
+    % sequential in this format, in order to allow for holes by "stitching" across solid parts)
+    %
+    % Useful if your vertices are not auto sorted clockwise/counterclockwise corresponding to solid vs. "hole" status;
+    % e.g. Matlab's coast.mat file coastlines are oriented randomly; MUST apply this for lakes to appear transparent if
+    % we want to color land solid, e.g.
     
     % Input
     if ~iscell(xs) && ~iscell(ys)
@@ -28,7 +50,7 @@ function [ F, V, xs, ys ] = mypoly2fv( xs, ys );
                 n_circum_ctours = n_circum_ctours+1; break; % all vertices of one closed contour are contained in another; it is "interior"
             end
         end
-        if mod(n_circum_ctours,2)==1
+        if mod(n_circum_ctours,2)==1 % allows for e.g. shapes INSIDE a hole, etc.
             [xnew, ynew] = poly2ccw(xs{pid},ys{pid});
         else
             [xnew, ynew] = poly2cw(xs{pid},ys{pid});

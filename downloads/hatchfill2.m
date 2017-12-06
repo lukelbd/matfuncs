@@ -55,8 +55,11 @@ function H = hatchfill2(A,varargin)
 %       Speckled region:
 %       hatchfill2(a,'speckle','HatchAngle',7,'HatchSpacing',1);
 
-% Copyright 2015 Takeshi Ikuma
+% Copyright 2015-2016 Takeshi Ikuma
 % History:
+% rev. 5 : (05-12-2016)
+%   * Fixed Contour with NaN data point disappearnace issue
+%   * Improved contours object support
 % rev. 4 : (11-18-2015)
 %   * Worked around the issue with HG2 contours with Fill='off'.
 %   * Removed nagging warning "UseHG2 will be removed..." in R2015b
@@ -147,6 +150,10 @@ try
    else
       H = line(X,Y,commonprops{:},'LineStyle','none','Marker',opts.SpeckleMarkerStyle,...
          'MarkerSize',opts.SpeckleSize,'MarkerFaceColor',opts.HatchColor,'Parent',A.Parent,'DisplayName',A.DisplayName);
+   end
+   
+   if isempty(H)
+      error('Unable to obtain hatching data from the specified object A.');
    end
    
    % 7. Move H so that it is place right above A in parent's uistack
@@ -787,10 +794,34 @@ elseif ishghandle(A,'contour') % HG2
    end
    
    % Retrieve data from hidden FacePrims property (a TriangleStrip object)
-   if isempty(A.FacePrims)
-      F = [];
-      V = [];
-   else
+   if ~isempty(A.ContourMatrix)
+      % CODE FOR THIS SECTION IS BORROWED FROM CONTOURCS (#28447)
+      
+      data = A.ContourMatrix;
+      
+      % Count number of contour segments found (K)
+      K = 0;
+      n0 = 1;
+      maxV = 0;
+      while n0<=size(data,2)
+         K = K + 1;
+         Nv = data(2,n0);
+         maxV = max(maxV,Nv);
+         n0 = n0 + Nv + 1;
+      end
+      
+      % create F & V output matrices
+      V = zeros(K*maxV,2);
+      F = nan(K,maxV);
+      % fill the output struct
+      n0 = 1;
+      for k = 1:K
+         idx = (n0+1):(n0+data(2,n0));
+         V(idx,:) = data(:,idx)';
+         F(k,1:data(2,n0)) = idx;
+         n0 = idx(end) + 1; % next starting index
+      end
+   elseif ~isempty(A.FacePrims)
       V = A.FacePrims.VertexData';
       I = double(A.FacePrims.StripData);
       
@@ -840,6 +871,10 @@ elseif ishghandle(A,'contour') % HG2
          end
          F(n,1:numel(idx)) = idx;
       end
+   else
+      F = [];
+      V = [];
+      warning('Failed to find the data of the Contour object A.');
    end
 elseif ishghandle(A,'histogram') %HG2
 else%if ishghandle(A,'hggroup')

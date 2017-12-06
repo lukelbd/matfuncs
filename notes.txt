@@ -1,0 +1,84 @@
+----------------------------------------------------------------------------------------------------
+IGNORE THIS -- OLD ASPECT-RATIO NOTES
+----------------------------------------------------------------------------------------------------
+
+Important note on fixing aspect ratios: It's actually very simple; if you fix the aspect ratio of something,
+ then the axes that fall WITHIN THE HORIZONTAL/VERTICAL ZONES PROJECTED BY THAT AXIS that ALSO require aspect ratio
+ fixing must have IDENTICAL aspect ratios. E.g. if you have a 1:2, 1:1, and 1:1 height:width ratio axes all in a row, and fix
+ all of them, then after adding say a ylabel and fixing the figure size in X, the 1:2 axis is squished in X twice as much
+ as the others; however in Y, it only needs to be squished half as much... wait, this does work. Well what about 
+ 3 1:1 maps and a 1:3 map below all of them? Say we add ticklabels in the middle. Well then it's ok too
+ since vertical stretching does not affect each one... OK, what about two 1:1s vertically stacked and a 2:1 next to them?
+ no, that works too... ah! it fails if we chop off the *TOP* though. solution? chop incrementally ascending through the
+ "TOP" coordinates. see which axes line up to left or right and chop them too. then chop in the context of the previous chop
+ to get it to the desired amount. if we end up chopping too much, throw an error. 
+Scenario that FAILS first step: grid of 3 1:1 plots above, and 2 1:1.5 plots below; the margin-preserving scheme ends up
+ chopping MORE off the left and right 1:1 axes than the middle one.
+I think this setup is okay, but you need to CLEARLY IDENTIFY its constraints; completely mysterious to me right now
+ 
+----------------------------------------------------------------------------------------------------
+NEW ASPECT-RATIO NOTES
+----------------------------------------------------------------------------------------------------
+TODO possible option: go with default axes widths/heights UNTIL figure width/height is EXCEEDED; THEN you can start
+smooshing stuff. can record property like 'maxheight' or 'maxwidth' with options like 'on' and 'off'; if on then
+conform plot to that size (i.e. xfix or yfix are on) but if off then CHECK current required height/width, and if
+exceeds 'width'/'height' peropties TURN ON xfix or yfix. Can trigger this in mymarginfix
+Also... what about saving "casual" AND journal-formatted figures at once? Why do we have "casual" option? Maybe just need journal property. I think actually better to use
+a MAXIMUM FIGURE WIDTH/HEIGHT after which, when reached, figure is squeezed in either direction. MORE NATURAL ... would use STANDARD AXIS WIDTH/HEIGHT of 1.5inches for 
+unit in subplot array, then squeeze. Then, could also perhaps allow as input the UNIT WIDTH/HEIGHT of each entry.
+
+NOTE how setting an aspect-ratio works: If user specifies an aspect ratio should be fixed, then ALL will be fixed EXCEPT for one that is
+intersected by a margin. When margin object/margin space is created, spanning axes are stretched to accomadate it, then if the x- or y-dimension
+is fixed, when new x/y-space is needed, the columns/rows are contracted according to their respective widths/heights, as are the rows/columns for a
+proportional (w.r.t. the total y/x non-margin space) y/x space. To preserve the aspect ratio of something even if it is intersected by a margin, that
+axis must SPAN THE WHOLE ROW/COLUMN and should have some SPECIAL FLAG in its userdata so that we INCLUDE those margin-spaces in determining how much
+to modify its height/width. Actually... it doesn't have to be the only object in the row/column, it just has to be the only one in the row (for horizontal-spanning)
+or column (for vertical-spanning) with FIXED ASPECT RATIO. There is then also the problem of mis-matched rows and columns due to the vector of margin specifiers
+being weird... maybe instead use RATIO OF HORIZONTAL SPACES AND COLUMN SPACES, with a single REFERENCE ASPECT RATIO the default being each entry in [1 2 2; 3 4 4] is
+a square. Also should allow repetitive forms like [1 2 2; 3 4 4] for this reason. This may be natural because often you have ONE location whose aspect ratio you 
+want constrained. Never really want the figure aspect ratio constrained... right? It's the axes we worry about. 
+
+Final format: Will NOT have slides as option; will instead offer maximum column widths... OR realize there are generally two kinds of figures, it appears: those that explicitly fit
+a column/row width, and those that are potentially smaller/bigger, but we decide AFTER THE FACT whether it should be 1-column or 2-column. So... shouldn't "scale" axes either, I think; 
+just have two options: fixed-column/height, and free-form. But for free form, should allow user to input the "unit" width/height such that each subplot in [1 2; 3 4] is width unitwidth
+and height unitheight. So THAT will determine widths/heights of boxes. OR if we have xfix/yfix for a movie, etc. can specify individual aspect ratio which will determine the height/width
+of everything else. Or can specify relative widths/heights of rows/columns for non-xfix/yfix. Or... just CHOOSE SOMETHING THAT WORKS. 
+Free-format: aspectratio is {[1 2],[1 1]} for shape [1 2; 3 4] and use DEFAULT unit width/height of 1.2 inches (say), OR have PRESET SIZES of 1, 1.2, 1.5, 3, for t/s/m/l/h to use for 
+unit widths/heights. Dimension will be nrow*ysz by ncol*xsz. THEN will habe optional FIXED full-width/height plots, with optional aspect-ratio property that preserves ratio of 
+collective widths to collective heights (ignoring margins).
+...let's list the possible options for declaring sizes/proportions of subplot arrays:
+*for UNRESTRICTED FIGURE SIZE
+1) proportional widths and proportional heights with:
+ a) single sample aspect ratio for one of the subplots
+ b) full width and full height of the AXIS-SPACE and THEN allow margins to grow its size
+ c) unit width/height such that TOTAL WIDTH will be unitwidth*ncols and HEIGHT will be unitheight*nrows
+2) ABSOLUTE widths and absolute heights
+*for RESTRICTED FIGURE SIZE
+1) proportional widths and proportional heights (in which one dimension will be constrained)
+ a) get the unitwidth/unitheight for the OTHER dimension
+ b) get the full starting width/height for the OTHER dimension
+ c) get the unit width/height of the other dimension
+ d) use the aspect ratio of the full figure / axis-space
+ e) SAMPLE figure aspect ratios
+*for RESTRICTED WIDHT AND HEIGHT
+1) proportional widths/height
+2) full aspect-ratio of axis space
+ a)  
+*also need OVERRIDE of default aspect ratio
+
+----------------------------------------------------------------------------------------------------
+MAP AXES NOTES
+----------------------------------------------------------------------------------------------------
+Possible map projections so far:
+pcarree (just x=lon,y=lat; small regions or globe)
+eqdazm (polar)
+ortho (view from an infinite distance)
+loximuth (oval, decent) 
+apianisu (oval; possibly best)
+aitoff (originator to hammer -- looks VERY SIMILAR but just go with hammer, I think)
+hammer (looks even better, and EQUAL AREA -- curved parallels at end)
+mollweid is also similar, but with parallel parallels,
+flatplrq (like winkel-tripel; the parabolic and sinusoidal versions look worse)
+winkel (really tall -- average of pcarree and SINUSOID so it's weird; 
+winkel-triple WOULD BE BETTER
+

@@ -38,7 +38,7 @@ function [ output ] = mytimelabel( ax, xyswitch, varargin )
         varargin(iarg:iarg+ndel-1) = [];
     end
     ticksw = [upper(xyswitch) 'Tick']; ticklabsw = [ticksw 'Label']; minorticksw = [upper(xyswitch) 'MinorTick']; % names for N-V pair changes    
-    ticksw, ticklabsw, minorticksw
+    %ticksw, ticklabsw, minorticksw
 
     %% For axis modifications
     set(ax,'Units','inches');
